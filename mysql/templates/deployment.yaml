@@ -1,56 +1,46 @@
 apiVersion: v1
-kind: Service
+kind: ConfigMap
 metadata:
-  name: mysql-headless
+  name: myconfigmap
   namespace: expense
-  labels:
-    app: mysql
-    project: expense
-spec:
-  clusterIP: None
-  selector:
-    app: mysql
-    project: expense
-  ports:
-   - protocol: TCP
-     port: 3306
-     targetPort: 3306
-
+data:
+  DB_HOST : "mysql"
 ---
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
-  name: mysql
+  name: backend
   namespace: expense
+  labels:
+    app: backend
 spec:
+  replicas: 2
   selector:
     matchLabels:
-      app: mysql
-      project: expense
-  serviceName: "mysql-headless"
-  replicas: {{ .Values.deployment.replica}} # by default is 1
-  minReadySeconds: 10 # by default is 0
+      app: backend
   template:
     metadata:
       labels:
-        app: mysql
-        project: expense
+        app: backend
     spec:
-      terminationGracePeriodSeconds: 10
       containers:
-      - name: mysql
-        image: manjudbadevops/mysql:{{ .Values.deployment.version }}
-        volumeMounts:
-        - name: www
-          mountPath: /var/lib/mysql
-  volumeClaimTemplates:
-  - metadata:
-      name: www
-      namespace: expense
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      storageClassName: "ebs-sc"
-      resources:
-        requests:
-          storage: 1Gi
+      - name: backend
+        image: manjudbadevops/backend:1.0.0
+        envFrom:
+        - configMapRef:
+            name: myconfigmap
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: expense
+spec:
+  selector:
+    app: backend
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
 
