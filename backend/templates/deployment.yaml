@@ -5,7 +5,8 @@ metadata:
   namespace: expense
 data:
   DB_HOST : "mysql"
----
+
+  
 apiVersion: apps/v1
 kind: Deployment
 metadata:
