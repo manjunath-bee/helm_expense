@@ -4,4 +4,4 @@ metadata:
   name: myconfigmap
   namespace: expense
 data:
-  DB_HOST : "mysql"
+  DB_HOST : mysql
